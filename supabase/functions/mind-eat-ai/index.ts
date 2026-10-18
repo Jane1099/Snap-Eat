@@ -17,7 +17,7 @@ Deno.serve(async req => {
     if (body.task === 'barcode') {
       if (typeof body.code !== 'string' || !/^\d{8,14}$/.test(body.code)) return reply({ error: 'Enter a valid 8–14 digit barcode' }, 400);
       const response = await fetch(`https://world.openfoodfacts.org/api/v2/product/${body.code}.json`, { headers: { 'User-Agent': 'MindEat/1.0 (nutrition tracker)' } }); if (!response.ok) return reply({ error: 'Food lookup is temporarily unavailable.' }, 502);
-      const result = await response.json(); if (!result.product) return reply({ error: 'Food not found. Try manual entry.' }, 404);
+      const result = await (); if (!result.product) return reply({ error: 'Food not found. Try manual entry.' }, 404);
       return reply({ food: packagedFood(result.product) });
     }
     if (body.task === 'search') {
@@ -89,16 +89,19 @@ Deno.serve(async req => {
       return reply({ error }, response.status === 429 ? 429 : 502);
     }
     const result = await response.json();
-    const text = result.candidates?.[0]?.content?.parts?.filter((part: { text?: string; thought?: boolean }) => part.text && !part.thought).map((part: { text: string }) => part.text).join('');
-    if (!text) {
-      console.warn('[mind-eat-ai] Empty Gemini response', { blockReason: result.promptFeedback?.blockReason, finishReason: result.candidates?.[0]?.finishReason });
-      return reply({ error: 'Gemini could not analyze this request. Try a clearer meal photo or enter your food manually.' }, 502);
-    }
-    if (report) {
-      const { data: previous, error: findError } = await db.from('health_entries').select('id').eq('user_id', user.id).eq('kind', 'report').eq('data->>key', reportKey).maybeSingle(); if (findError) throw findError;
-      const data = { key: reportKey, text, start: since, finish };
-      const { error } = previous ? await db.from('health_entries').update({ data }).eq('id', previous.id) : await db.from('health_entries').insert({ user_id: user.id, kind: 'report', entry_date: finish, data }); if (error && error.code !== '23505') throw error;
-    }
-    return reply(body.task === 'recognize' ? JSON.parse(text) : { text });
+    const result = await response.json();
+const text = result.candidates?.[0]?.content?.parts?.filter((part: { text?: string; thought?: boolean }) => part.text && !part.thought).map((part: { text?: string }) => part.text).join('');
+if (!text) {
+  console.warn('[mind-eat-ai] Empty Gemini response', { blockReason: result.promptFeedback?.blockReason, finishReason: result.candidates?.[0]?.finishReason });
+  return reply({ error: 'Gemini could not analyze this request. Try a clearer meal photo or enter your food manually.' }, 502);
+}
+if (report) {
+  // ... your existing report database code ...
+}
+
+// Clean markdown code blocks if Gemini wrapped the JSON
+const cleanedText = text.replace(/```json\s*([\s\S]*?)\s*```/g, '$1').replace(/```\s*([\s\S]*?)\s*```/g, '$1').trim();
+
+return reply(body.task === 'recognize' ? JSON.parse(cleanedText) : text);
   } catch (error) { console.error('[mind-eat-ai] Request failed', { message: error instanceof Error ? error.message : 'Unknown error' }); return reply({ error: 'Unable to complete the request. Please try again.' }, 500); }
 });
