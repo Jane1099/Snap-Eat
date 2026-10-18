@@ -64,6 +64,7 @@ export function useHealth() { const context = useContext(Context); if (!context)
 export function totals(entries: Entry[], date: string) {
   const day = entries.filter(e => e.entry_date === date); const foods = day.filter(e => e.kind === 'food');
   const sum = (key: string) => foods.reduce((s, e) => s + Number(e.data[key] || 0), 0);
-  return { calories: sum('calories'), protein: sum('protein'), carbs: sum('carbs'), fat: sum('fat'), burned: day.filter(e => e.kind === 'exercise').reduce((s, e) => s + Number(e.data.calories || 0), 0), water: day.filter(e => e.kind === 'water').reduce((s, e) => s + Number(e.data.ml || 0), 0) };
+  const burned = Number(day.filter(e => e.kind === 'exercise' && e.data.status !== 'planned').reduce((s, e) => s + Number(e.data.calories || 0), 0).toFixed(1));
+  return { calories: sum('calories'), protein: sum('protein'), carbs: sum('carbs'), fat: sum('fat'), burned, water: day.filter(e => e.kind === 'water').reduce((s, e) => s + Number(e.data.ml || 0), 0) };
 }
 export function tdee(p: Profile) { return Math.round((10 * p.weight + 6.25 * p.height - 5 * p.age + (p.gender === 'female' ? -161 : p.gender === 'male' ? 5 : -78)) * p.activity); }
