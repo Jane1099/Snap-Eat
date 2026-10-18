@@ -14,7 +14,7 @@ export const nutrients = [
   { key: 'potassium', label: 'Potassium', unit: 'mg', max: 50000 },
 ] as const;
 export type NutrientKey = typeof nutrients[number]['key'];
-export type Food = { id?: string; name: string; category?: string; serving: string; calories: number; protein: number; carbs: number; fat: number; confidence?: number; photo_path?: string } & Partial<Record<NutrientKey, number>>;
+export type Food = { id?: string; name: string; category?: string; region?: string; aliases?: string[]; source?: string; serving: string; calories: number; protein: number; carbs: number; fat: number; confidence?: number; photo_path?: string } & Partial<Record<NutrientKey, number>>;
 export const foodSchema = z.object({
   name: z.string().trim().min(1, 'Give your food a name.').max(150), serving: z.string().trim().min(1, 'Enter a serving size.').max(100),
   calories: z.number().min(0).max(10000), protein: z.number().min(0).max(1000), carbs: z.number().min(0).max(2000), fat: z.number().min(0).max(1000),
