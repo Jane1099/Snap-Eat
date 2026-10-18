@@ -68,8 +68,8 @@ Deno.serve(async req => {
       role: message.role === 'assistant' ? 'model' : 'user',
       parts: [{ text: message.content }, ...(imagePart ? [imagePart] : [])],
     }));
-    console.info('[mind-eat-ai] Calling Gemini', { task: body.task, model: 'gemini-2.5-flash' });
-    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent', {
+    console.info('[mind-eat-ai] Calling Gemini', { task: body.task, model: 'gemini-1.5-flash' });
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent', {
       method: 'POST',
       headers: { 'x-goog-api-key': key, 'Content-Type': 'application/json' },
       body: JSON.stringify({
