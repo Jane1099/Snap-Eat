@@ -5,6 +5,7 @@ import { Camera, Search, ScanBarcode, Pencil, ArrowLeft, Plus, Heart, Loader2, S
 import { supabase } from '@/integrations/supabase/client';
 import { useHealth, today } from '@/lib/health';
 import { askAI, uploadFoodPhoto } from '@/lib/ai';
+import { preprocessMealPhoto } from '@/lib/mealPhoto';
 import { Food, emptyFood, foodSchema, scaleFood } from '@/lib/food';
 import BarcodeCamera from '@/components/BarcodeCamera';
 import MealCamera from '@/components/MealCamera';
@@ -30,15 +31,16 @@ export default function LogFood() {
     setEditingId(null);
     if (foodId) { const entry = [...foods, ...customs].find(f => f.id === foodId); if (entry) setSelected(entry); }
   }, [foodId, foods]);
-  useEffect(() => () => { if (preview) URL.revokeObjectURL(preview); }, [preview]);
   const choose = (food: Food) => { setSelected(food); setQuantity(1); setEditingId(null); setRecent(values => [food.name, ...values.filter(v => v !== food.name)].slice(0, 5)); };
   const switchMode = (next: string) => { setSelected(null); setEditingId(null); setCamera(false); setLiveMeal(false); params.set('mode', next); setParams(params); };
   const lookup = useCallback(async (value: string) => { setCode(value); setCamera(false); setBusy(true); try { const result = await askAI({ task: 'barcode', code: value }); choose(result.food); } catch (error) { toast.error((error as Error).message); } finally { setBusy(false); } }, []);
   const photo = async (file: File) => {
-    if (!session) return; setBusy(true); setPreview(URL.createObjectURL(file));
+    if (!session) return; setBusy(true); setPreview('');
     let path: string | undefined;
     try {
-      path = await uploadFoodPhoto(file, session.user.id);
+      const processed = await preprocessMealPhoto(file);
+      setPreview(processed.dataUrl);
+      path = await uploadFoodPhoto(processed.file, session.user.id);
       const result = await askAI({ task: 'recognize', path }); const parsed = foodSchema.safeParse(result.food);
       if (!parsed.success) throw new Error('This meal could not be reliably identified. Please enter it manually.');
       choose({ ...(parsed.data as Food), category: 'AI estimate', confidence: result.food.confidence, photo_path: path });
