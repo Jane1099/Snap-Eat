@@ -22,9 +22,10 @@ import PWAStatus from '@/components/PWAStatus';
 
 const queryClient = new QueryClient();
 function PrivateLayout({ onboarding = false }: { onboarding?: boolean }) {
-  const { session, ready, profile, profileLoading } = useHealth();
+  const { session, ready, profile, profileLoading, profileError } = useHealth();
   if (!ready || (session && profileLoading)) return <div className="flex min-h-screen items-center justify-center text-primary">Opening your wellness space…</div>;
   if (!session) return <Navigate to="/auth" replace />;
+  if (profileError) return <div className="mx-auto mt-12 max-w-md rounded-2xl border border-border bg-card p-6"><h1 className="text-xl font-semibold">Your profile couldn’t be loaded.</h1><p className="mt-3 text-sm text-muted-foreground">Check your connection and retry. Your saved goals have not been changed.</p><button className="action mt-4" onClick={() => queryClient.invalidateQueries({ queryKey: ['profile'] })}>Retry</button></div>;
   if (!onboarding && !profile.onboarded) return <Navigate to="/onboarding" replace />;
   return <AppShell><Outlet /></AppShell>;
 }
