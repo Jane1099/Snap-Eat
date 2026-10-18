@@ -5,8 +5,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export type Entry = { id: string; kind: string; entry_date: string; data: Record<string, any>; created_at: string };
-export type Profile = { name: string; age: number; gender: string; weight: number; height: number; activity: number; goal: string; target_weight: number; calorie_goal: number; protein_goal: number; carbs_goal: number; fat_goal: number; water_goal: number; diet: string; onboarded: boolean };
-export const defaults: Profile = { name: '', age: 28, gender: 'male', weight: 75, height: 175, activity: 1.55, goal: 'Weight loss', target_weight: 70, calorie_goal: 2000, protein_goal: 120, carbs_goal: 250, fat_goal: 60, water_goal: 2500, diet: 'Vegetarian', onboarded: false };
+export type ReminderSettings = { meals?: boolean; breakfast?: string; lunch?: string; dinner?: string; snacks?: string; water?: boolean; water_frequency?: number; measurements?: boolean; measurement_day?: number; insights?: boolean };
+export type Profile = { name: string; age: number; gender: string; weight: number; height: number; activity: number; goal: string; target_weight: number; target_date?: string | null; calorie_goal: number; protein_goal: number; carbs_goal: number; fat_goal: number; water_goal: number; diet: string; onboarded: boolean; settings?: ReminderSettings };
+export const defaults: Profile = { name: '', age: 28, gender: 'male', weight: 75, height: 175, activity: 1.55, goal: 'Weight loss', target_weight: 70, calorie_goal: 2000, protein_goal: 120, carbs_goal: 250, fat_goal: 60, water_goal: 2500, diet: 'Vegetarian', onboarded: false, settings: {} };
 export const today = () => new Date().toLocaleDateString('en-CA');
 const Context = createContext<any>(null);
 export function HealthProvider({ children }: { children: ReactNode }) {
