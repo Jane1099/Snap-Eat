@@ -10,6 +10,7 @@ import BarcodeCamera from '@/components/BarcodeCamera';
 import MealCamera from '@/components/MealCamera';
 import ManualFoodForm from '@/components/ManualFoodForm';
 import FoodNutrition from '@/components/FoodNutrition';
+import RemoteFoodSearch from '@/components/RemoteFoodSearch';
 import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
 export type { Food } from '@/lib/food';
@@ -77,5 +78,6 @@ export default function LogFood() {
       {mode === 'barcode' && <section className="panel space-y-5 p-6"><h2 className="text-xl font-semibold">Scan packaged food</h2>{camera ? <BarcodeCamera onCode={lookup} /> : <button disabled={busy} onClick={() => setCamera(true)} className="flex h-48 w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-primary/40 bg-primary/5 text-primary"><ScanBarcode size={45} /><span className="text-sm">Open camera scanner</span></button>}<p className="text-xs text-muted-foreground">Or enter the barcode. Open Food Facts nutrition is per 100 g; adjust portions before logging.</p><form className="flex gap-3" onSubmit={e => { e.preventDefault(); lookup(code); }}><input className="field" inputMode="numeric" pattern="[0-9]{8,14}" required placeholder="8–14 digit barcode" value={code} onChange={e => setCode(e.target.value)} /><button className="action" disabled={busy} aria-label="Look up barcode">{busy ? <Loader2 className="animate-spin" size={18} /> : <Search size={18} />}</button></form></section>}
       {mode === 'manual' && <ManualFoodForm food={manual} editing={!!editingId} busy={busy} saveCustom={saveCustom} onSaveCustom={setSaveCustom} onSubmit={log} />}
     </>}
+    {!selected && mode === 'search' && <RemoteFoodSearch onSelect={choose} />}
   </div>;
 }

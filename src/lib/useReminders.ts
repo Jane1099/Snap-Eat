@@ -27,9 +27,11 @@ export function useReminders() {
           await qc.invalidateQueries({ queryKey: ['entries'] }); toast(item.title, { description: item.message });
           if ('Notification' in window && Notification.permission === 'granted') {
             const registration = 'serviceWorker' in navigator ? await navigator.serviceWorker.getRegistration() : undefined;
-            if (registration) await registration.showNotification(item.title, { body: item.message, icon: '/icons/icon-192.png', tag: item.key, data: { route: item.route } });
+            if (registration) await registration.showNotification(item.title, { body: item.message, icon: '/icons/mind-eat.png', tag: item.key, data: { route: item.route } });
           }
         }
+      } catch {
+        toast.error('Could not display your reminder. Check the notification center.');
       } finally { running = false; }
     };
     check(); const timer = window.setInterval(check, 60000);
