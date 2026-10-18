@@ -41,8 +41,11 @@ export default function LogFood() {
       const processed = await preprocessMealPhoto(file);
       setPreview(processed.dataUrl);
       path = await uploadFoodPhoto(processed.file, session.user.id);
-      const result = await askAI({ task: 'recognize', path }); const parsed = foodSchema.safeParse(result.food);
-      if (!parsed.success) throw new Error('This meal could not be reliably identified. Please enter it manually.');
+      const result = await askAI({ task: 'recognize', path }); const parsed = foodSchema.safeParse(result?.food);
+      if (!parsed.success) {
+        console.warn('[meal-recognition] Invalid nutrition response', { fields: parsed.error.issues.map(issue => issue.path.join('.')) });
+        throw new Error('The AI returned incomplete nutrition data. Please try the photo again or enter the meal manually.');
+      }
       choose({ ...(parsed.data as Food), category: 'AI estimate', confidence: result.food.confidence, photo_path: path });
     } catch (error) { if (path) await supabase.storage.from('food-photos').remove([path]); toast.error((error as Error).message); } finally { setBusy(false); }
   };
