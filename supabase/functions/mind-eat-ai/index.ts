@@ -75,7 +75,7 @@ Deno.serve(async req => {
       body: JSON.stringify({
         systemInstruction: { parts: [{ text: messages.filter(message => message.role === 'system').map(message => message.content).join('\n') }] },
         contents,
-        generationConfig: { maxOutputTokens: 4096, ...(body.task === 'recognize' ? { responseMimeType: 'application/json' } : {}) },
+       generationConfig: { maxOutputTokens: 4096, thinkingConfig: { thinkingLevel: "low" }, ...(body.task === 'recognize' ? { responseMimeType: 'application/json' } : {}) },
       }),
     });
     if (!response.ok) {
