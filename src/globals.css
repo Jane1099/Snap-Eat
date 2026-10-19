@@ -5,13 +5,16 @@
 @layer base {
  :root { --background: 222 25% 9%; --foreground: 210 20% 97%; --card: 220 21% 13%; --card-foreground: 210 20% 97%; --popover: 220 21% 13%; --popover-foreground: 210 20% 97%; --primary: 160 84% 39%; --primary-foreground: 222 30% 8%; --secondary: 220 17% 18%; --secondary-foreground: 210 20% 96%; --muted: 220 17% 18%; --muted-foreground: 217 11% 65%; --accent: 160 40% 17%; --accent-foreground: 160 72% 63%; --destructive: 0 84% 60%; --destructive-foreground: 0 0% 100%; --border: 220 15% 21%; --input: 220 15% 24%; --ring: 160 84% 39%; --radius: 1rem; }
  :root.light { --background: 150 20% 96%; --foreground: 220 28% 14%; --card: 0 0% 100%; --card-foreground: 220 28% 14%; --popover: 0 0% 100%; --popover-foreground: 220 28% 14%; --secondary: 150 16% 92%; --secondary-foreground: 220 28% 14%; --muted: 150 16% 92%; --muted-foreground: 220 12% 40%; --border: 150 12% 85%; --input: 150 12% 80%; }
- * { @apply border-border; } body { @apply bg-background text-foreground antialiased; font-family: 'Inter', sans-serif; margin: 0; } button, input, select { font: inherit; } button { -webkit-tap-highlight-color: transparent; } input[type=number] { -moz-appearance: textfield; } input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; } ::selection { background: #10b98155; } }
+ * { @apply border-border; } body { @apply bg-background text-foreground antialiased; font-family: 'Inter', sans-serif; margin: 0; } button, input, select { font: inherit; } button { -webkit-tap-highlight-color: transparent; } input[type=number] { -moz-appearance: textfield; } input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; } ::selection { background: hsl(var(--primary) / 0.3); color: hsl(var(--foreground)); } }
 @layer components {
  .panel { @apply rounded-2xl border border-border bg-card; }
  .eyebrow { @apply text-[11px] font-semibold uppercase tracking-[0.13em] text-muted-foreground; }
  .field { @apply w-full rounded-xl border border-input bg-background px-3 py-2.5 text-sm outline-none focus:border-primary; }
- .action { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-emerald-400 disabled:opacity-50; }
+ .action { @apply inline-flex items-center justify-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50; }
  .quiet { @apply inline-flex items-center justify-center gap-2 rounded-xl border border-border bg-secondary/40 px-3 py-2 text-sm font-medium transition-colors hover:bg-secondary; }
+}
+@layer utilities {
+ .text-primary { color: hsl(var(--primary-readable, var(--primary))); }
 }
 .recharts-cartesian-grid-horizontal line { stroke: hsl(var(--border)); }
 .recharts-text { fill: hsl(var(--muted-foreground)); font-size: 11px; }

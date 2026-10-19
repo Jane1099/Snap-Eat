@@ -1,1 +1,3 @@
-# Welcome to your Dyad app
+# Snap Eat
+
+A private nutrition and fitness tracker built with React, TypeScript and Supabase.

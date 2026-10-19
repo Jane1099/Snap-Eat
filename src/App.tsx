@@ -19,6 +19,7 @@ import Notifications from '@/pages/Notifications';
 import Splash from '@/pages/Splash';
 import NotFound from '@/pages/NotFound';
 import PWAStatus from '@/components/PWAStatus';
+import Settings from '@/pages/Settings';
 
 const queryClient = new QueryClient();
 function PrivateLayout({ onboarding = false }: { onboarding?: boolean }) {
@@ -31,7 +32,7 @@ function PrivateLayout({ onboarding = false }: { onboarding?: boolean }) {
 }
 function Home() {
   const { session, ready } = useHealth();
-  if (!ready) return <div className="p-8 text-primary">Loading Mind Eat…</div>;
+  if (!ready) return <div className="p-8 text-primary">Loading Snap Eat…</div>;
   return session ? <Navigate to="/dashboard" replace /> : <AppShell><Index /></AppShell>;
 }
 export default function App() {
@@ -55,6 +56,7 @@ export default function App() {
       <Route path="/favorites" element={<Favorites />} />
       <Route path="/notifications" element={<Notifications />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/settings" element={<Settings />} />
     </Route>
     <Route path="*" element={<NotFound />} />
   </Routes></BrowserRouter></TooltipProvider></HealthProvider></QueryClientProvider>;

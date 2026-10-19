@@ -16,12 +16,12 @@ export default defineConfig(() => ({
     registerType: 'prompt',
     injectManifest: { globPatterns: ['**/*.{js,css,html,svg,png,woff2}'], maximumFileSizeToCacheInBytes: 4 * 1024 * 1024 },
     manifest: {
-      id: '/', name: 'Mind Eat — Mindful Nutrition & Fitness', short_name: 'Mind Eat',
-      description: 'Eat with intention. Track your meals, movement and progress.',
-      theme_color: '#111827', background_color: '#111827', display: 'standalone',
+      id: '/', name: 'Snap Eat', short_name: 'Snap Eat',
+      description: 'Snap Eat — Track your meals, movement and progress. Eat with intention.',
+      theme_color: '#10b981', background_color: '#111827', display: 'standalone',
       start_url: '/splash', scope: '/', orientation: 'portrait-primary',
-      icons: [{ src: '/icons/mind-eat.png', sizes: '1254x1254', type: 'image/png', purpose: 'any maskable' }],
-      shortcuts: [{ name: 'Log a meal', url: '/log-food', icons: [{ src: '/icons/mind-eat.png', sizes: '1254x1254' }] }, { name: 'My progress', url: '/measurements' }],
+      icons: [{ src: '/icons/snap-eat.png', sizes: '1254x1254', type: 'image/png', purpose: 'any maskable' }],
+      shortcuts: [{ name: 'Log a meal', url: '/log-food', icons: [{ src: '/icons/snap-eat.png', sizes: '1254x1254' }] }, { name: 'My progress', url: '/measurements' }],
     },
   })],
   resolve: {

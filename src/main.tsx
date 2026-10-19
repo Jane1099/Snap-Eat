@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import "./globals.css";
+import { initializeTheme } from "./lib/theme";
 
-if (localStorage.getItem('mind-eat-theme') === 'light') document.documentElement.classList.add('light');
+initializeTheme();
 createRoot(document.getElementById("root")!).render(<App />);

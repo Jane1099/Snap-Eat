@@ -27,7 +27,7 @@ export function useReminders() {
           await qc.invalidateQueries({ queryKey: ['entries'] }); toast(item.title, { description: item.message });
           if ('Notification' in window && Notification.permission === 'granted') {
             const registration = 'serviceWorker' in navigator ? await navigator.serviceWorker.getRegistration() : undefined;
-            if (registration) await registration.showNotification(item.title, { body: item.message, icon: '/icons/mind-eat.png', tag: item.key, data: { route: item.route } });
+            if (registration) await registration.showNotification(item.title, { body: item.message, icon: '/icons/snap-eat.png', tag: item.key, data: { route: item.route } });
           }
         }
       } catch {

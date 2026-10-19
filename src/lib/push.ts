@@ -6,7 +6,7 @@ async function request(body: Record<string, unknown>) {
   return data;
 }
 export async function enablePush() {
-  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) throw new Error('Push is unavailable in this browser. On iOS, install Mind Eat to your home screen first.');
+  if (!('serviceWorker' in navigator) || !('PushManager' in window) || !('Notification' in window)) throw new Error('Push is unavailable in this browser. On iOS, install Snap Eat to your home screen first.');
   const config = await request({ task: 'config' });
   if (!config.configured) throw new Error('Scheduled push needs VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY and VAPID_SUBJECT in Supabase Edge Function secrets.');
   const registration = await navigator.serviceWorker.getRegistration();

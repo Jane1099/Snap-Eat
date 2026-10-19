@@ -15,7 +15,7 @@ export default function ManualFoodForm({ food, editing, busy, saveCustom, onSave
       {(['calories', 'protein', 'carbs', 'fat'] as const).map(key => <label key={key} className="text-xs capitalize text-muted-foreground">{key} ({key === 'calories' ? 'kcal' : 'g'})<input className="field mt-2" type="number" step="any" min="0" {...register(key, { valueAsNumber: true })} />{error(key)}</label>)}
     </div>
     <details className="mt-5 rounded-xl border border-border p-4"><summary className="cursor-pointer text-sm">Additional nutrition (optional)</summary><p className="my-3 text-xs text-muted-foreground">Leave unknown values blank. Use label or reliable serving-based data.</p><div className="grid grid-cols-2 gap-4">{nutrients.map(n => <label key={n.key} className="text-xs text-muted-foreground">{n.label} ({n.unit})<input className="field mt-2" type="number" min="0" max={n.max} step="any" {...register(n.key, { setValueAs: value => value === '' ? undefined : Number(value) })} />{error(n.key)}</label>)}</div></details>
-    {!editing && !hideSaveCustom && <label className="my-5 flex items-center gap-2 text-sm"><input type="checkbox" checked={saveCustom} onChange={e => onSaveCustom(e.target.checked)} className="accent-emerald-500" />Save to my custom foods</label>}
+    {!editing && !hideSaveCustom && <label className="my-5 flex items-center gap-2 text-sm"><input type="checkbox" checked={saveCustom} onChange={e => onSaveCustom(e.target.checked)} className="accent-[hsl(var(--primary))]" />Save to my custom foods</label>}
     <button disabled={busy} className="action mt-5 w-full">{editing ? <Save size={17} /> : <Plus size={17} />}{busy ? 'Saving…' : submitLabel || (editing ? 'Save custom food' : 'Log food')}</button>
   </form>;
 }

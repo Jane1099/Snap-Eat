@@ -20,7 +20,7 @@ self.addEventListener('message', event => { if (event.data?.type === 'SKIP_WAITI
 self.addEventListener('push', event => {
   let payload: { title?: string; message?: string; route?: string; key?: string } = {};
   try { payload = event.data?.json() || {}; } catch { payload = {}; }
-  event.waitUntil(self.registration.showNotification(payload.title || 'Mind Eat', { body: payload.message || 'A little moment for your wellbeing.', icon: '/icons/mind-eat.png', badge: '/icons/mind-eat.png', tag: payload.key, data: { route: payload.route || '/notifications' } }));
+  event.waitUntil(self.registration.showNotification(payload.title || 'Snap Eat', { body: payload.message || 'A little moment for your wellbeing.', icon: '/icons/snap-eat.png', badge: '/icons/snap-eat.png', tag: payload.key, data: { route: payload.route || '/notifications' } }));
 });
 self.addEventListener('notificationclick', event => {
   event.notification.close();
