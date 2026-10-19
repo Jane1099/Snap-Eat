@@ -29,7 +29,7 @@ export default function LoggedMealEditor({ entry, onClose }: { entry: Entry; onC
   };
   return <Dialog open onOpenChange={open => { if (!open && !busy) onClose(); }}><DialogContent className="max-h-[90dvh] w-[calc(100%-1.5rem)] max-w-2xl overflow-y-auto rounded-3xl border-primary/15 p-4 sm:p-6"><DialogHeader><DialogTitle className="text-xl">Edit your meal</DialogTitle><DialogDescription>{entry.data.meal} · {entry.entry_date}. Changes are only applied when you save.</DialogDescription></DialogHeader>
     {!Array.isArray(entry.data.items) && <p className="rounded-xl bg-amber-400/10 p-3 text-xs text-amber-400">This older log has no saved breakdown, so its logged portion is shown as one item. You can replace it with individual foods.</p>}
-    <MealItemsEditor items={items} onChange={setItems} busy={busy} />
+    <MealItemsEditor items={items} onChange={setItems} busy={busy} onBusyChange={setBusy} />
     <div className="flex gap-3"><button type="button" className="quiet" disabled={busy} onClick={onClose}>Cancel</button><button type="button" className="action flex-1" disabled={busy || !validMeal(items)} onClick={save}>{busy ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}Save meal changes</button></div>
   </DialogContent></Dialog>;
 }
