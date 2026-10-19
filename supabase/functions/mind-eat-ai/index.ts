@@ -90,12 +90,19 @@ Deno.serve(async req => {
     });
     if (!response.ok) {
       const failure = await response.json().catch(() => null);
-      console.error('[mind-eat-ai] Gemini failure', { status: response.status, code: failure?.error?.status });
+      const providerMessage = typeof failure?.error?.message === 'string'
+        ? failure.error.message.split(key).join('[redacted]').replace(/AIza[\w-]{30,}/g, '[redacted]').replace(/\s+/g, ' ').slice(0, 1000)
+        : '';
+      console.error('[mind-eat-ai] Gemini failure', { task: body.task, model: 'gemini-3.5-flash-lite', status: response.status, code: failure?.error?.status, message: providerMessage });
       const error = response.status === 429
         ? 'Gemini quota or rate limit reached. Check your Gemini API quota and try again later.'
-        : response.status === 400 || response.status === 401 || response.status === 403
-          ? 'Gemini rejected the request. Check GEMINI_API_KEY validity and API restrictions in your Google project.'
-          : 'Gemini is temporarily unavailable. Please try again.';
+        : response.status === 400
+          ? `Gemini rejected the request parameters: ${providerMessage || 'INVALID_ARGUMENT. Check the model generation settings and response schema.'}`
+          : response.status === 401 || response.status === 403
+            ? 'Gemini denied access. Check GEMINI_API_KEY validity and API restrictions in your Google project.'
+            : response.status === 404
+              ? 'The configured Gemini model was not found or is unavailable for this API key.'
+              : 'Gemini is temporarily unavailable. Please try again.';
       return reply({ error }, response.status === 429 ? 429 : 502);
     }
     const result = await response.json();
