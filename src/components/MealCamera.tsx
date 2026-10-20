@@ -5,13 +5,27 @@ export default function MealCamera({ onCapture, onClose }: { onCapture: (file: F
   const video = useRef<HTMLVideoElement>(null); const stream = useRef<MediaStream | null>(null);
   const [facing, setFacing] = useState<'environment' | 'user'>('environment'); const [ready, setReady] = useState(false); const [torch, setTorch] = useState(false); const [hasTorch, setHasTorch] = useState(false); const [error, setError] = useState('');
   useEffect(() => {
-    let active = true; setReady(false); setError(''); setTorch(false);
+    let active = true; setReady(false); setError(''); setTorch(false); setHasTorch(false);
     if (!navigator.mediaDevices?.getUserMedia) { setError('Live camera needs HTTPS and a supported browser. You can still upload a photo.'); return; }
     navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facing } }, audio: false }).then(async next => {
       if (!active) { next.getTracks().forEach(t => t.stop()); return; }
       stream.current = next; if (video.current) { video.current.srcObject = next; await video.current.play(); }
-      const capabilities = next.getVideoTracks()[0].getCapabilities() as MediaTrackCapabilities & { torch?: boolean }; setHasTorch(Boolean(capabilities.torch)); setReady(true);
-    }).catch(() => { if (active) setError('Camera access was denied or unavailable. Close this view to upload a photo instead.'); });
+      if (!active) { next.getTracks().forEach(t => t.stop()); return; }
+      const capabilities = next.getVideoTracks()[0].getCapabilities?.() as (MediaTrackCapabilities & { torch?: boolean }) | undefined;
+      setHasTorch(Boolean(capabilities?.torch)); setReady(true);
+    }).catch(cause => {
+      if (!active) return;
+      stream.current?.getTracks().forEach(t => t.stop()); stream.current = null;
+      const name = cause instanceof Error ? cause.name : 'UnknownError';
+      console.warn('[meal-camera] Camera start failed', { name });
+      setError(name === 'NotAllowedError' || name === 'SecurityError'
+        ? 'Allow camera access in your browser’s site settings, then reopen the camera. You can also upload a photo.'
+        : name === 'NotFoundError'
+          ? 'No camera was found on this device. Upload a meal photo instead.'
+          : name === 'NotReadableError'
+            ? 'The camera may be in use by another app. Close that app and try again, or upload a photo.'
+            : 'The camera could not start. Reopen this view and try again, or upload a photo.');
+    });
     return () => { active = false; stream.current?.getTracks().forEach(t => t.stop()); stream.current = null; };
   }, [facing]);
   const capture = () => {

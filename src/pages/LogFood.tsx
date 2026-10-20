@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Camera, Search, ScanBarcode, Pencil, ArrowLeft, Plus, Heart, Loader2, Sparkles, Upload } from 'lucide-react';
+import { Capacitor } from '@capacitor/core';
+import { Camera as NativeCamera, CameraResultType, CameraSource } from '@capacitor/camera';
 import { supabase } from '@/integrations/supabase/client';
 import { useHealth, today } from '@/lib/health';
 import { askAI, uploadFoodPhoto } from '@/lib/ai';
@@ -25,7 +27,8 @@ export default function LogFood() {
   const { session, entries, add } = useHealth(); const mode = params.get('mode') || 'search';
   const [selected, setSelected] = useState<Food | null>(null);
   const [quantity, setQuantity] = useState(1); const [meal, setMeal] = useState(params.get('meal') || 'Lunch'); const [manual, setManual] = useState<Food>(emptyFood);
-  const [editingId, setEditingId] = useState<string | null>(null); const [saveCustom, setSaveCustom] = useState(false); const [busy, setBusy] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null); const [saveCustom, setSaveCustom] = useState(false); const [working, setBusy] = useState(false);
+  const [capturing, setCapturing] = useState(false); const busy = working || capturing;
   const [code, setCode] = useState(''); const [preview, setPreview] = useState(''); const [camera, setCamera] = useState(false); const [liveMeal, setLiveMeal] = useState(false);
   const [scanItems, setScanItems] = useState<MealItem[] | null>(null); const [photoPath, setPhotoPath] = useState<string | undefined>();
   const [aiNotes, setAINotes] = useState<string[]>([]);
@@ -52,6 +55,25 @@ export default function LogFood() {
       setPhotoPath(path);
       setScanItems(parsed.data.map(item => makeMealItem({ ...item, category: 'AI estimate' } as Food, item.quantity)));
     } catch (error) { if (path) await supabase.storage.from('food-photos').remove([path]); toast.error((error as Error).message); } finally { setBusy(false); }
+  };
+  const openMealCamera = async () => {
+    if (busy) return;
+    if (!Capacitor.isNativePlatform()) { setLiveMeal(true); return; }
+    setCapturing(true);
+    try {
+      let permission = await NativeCamera.checkPermissions();
+      if (permission.camera !== 'granted') permission = await NativeCamera.requestPermissions({ permissions: ['camera'] });
+      if (permission.camera !== 'granted') throw new Error('Allow Camera in Android Settings → Apps → Snap Eat → Permissions, then try again. You can also upload a photo.');
+      const image = await NativeCamera.getPhoto({ source: CameraSource.Camera, resultType: CameraResultType.Uri, quality: 90, saveToGallery: false });
+      if (!image.webPath) throw new Error('The camera did not return a photo. Please try again or upload one.');
+      const response = await fetch(image.webPath);
+      if (!response.ok) throw new Error('The captured photo could not be opened. Please try again.');
+      const blob = await response.blob();
+      await photo(new File([blob], 'meal.jpg', { type: 'image/jpeg' }));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Could not open the camera. Please upload a photo instead.';
+      if (!/cancelled|canceled/i.test(message)) toast.error(message);
+    } finally { setCapturing(false); }
   };
   const logScan = async () => {
     if (!scanItems || !validMeal(scanItems)) { toast.error('Add at least one item and check each quantity.'); return; }
@@ -91,7 +113,7 @@ export default function LogFood() {
       <div className="flex flex-wrap gap-3"><button className="quiet" disabled={busy} onClick={editSelected}>{selected.category === 'Custom' ? 'Edit custom food' : 'Edit manually'}</button><button className="action flex-1" disabled={busy} onClick={() => log(selected, quantity)}><Plus size={17} />Log food</button>{!foodId && <button className="w-full text-center text-xs text-muted-foreground" onClick={() => setSelected(null)} disabled={busy}>Try another food</button>}</div>
     </section> : <>
       {mode === 'search' && <RemoteFoodSearch onSelect={choose} />}
-      {mode === 'camera' && <section className="panel overflow-hidden">{liveMeal ? <MealCamera onCapture={photo} onClose={() => setLiveMeal(false)} /> : <img src={preview || '/assets/indian-thali.png'} alt={preview ? 'Your meal' : 'An Indian thali'} className="h-64 w-full object-cover" />}<div className="p-6"><h2 className="flex items-center gap-2 text-xl font-semibold"><Sparkles className="text-primary" size={20} />Your meal, in a snap.</h2><p className="my-3 text-sm leading-relaxed text-muted-foreground">Take a clear overhead photo. AI estimates the foods and portion, then you review and adjust.</p>{busy ? <p role="status" className="flex items-center justify-center gap-2 rounded-xl bg-primary/10 p-4 text-sm text-primary"><Loader2 size={18} className="animate-spin" />Analyzing your food…</p> : <div className="flex flex-wrap gap-3"><button className="action flex-1" onClick={() => setLiveMeal(true)}><Camera size={18} />Open camera</button><label className="quiet cursor-pointer"><Upload size={17} />Upload photo<input type="file" accept="image/*" className="hidden" onChange={e => { const file = e.target.files?.[0]; if (file) photo(file); e.target.value = ''; }} /></label></div>}<p className="mt-3 text-center text-[10px] text-muted-foreground">Estimates, not exact measurements. Review before logging.</p></div></section>}
+      {mode === 'camera' && <section className="panel overflow-hidden">{liveMeal ? <MealCamera onCapture={photo} onClose={() => setLiveMeal(false)} /> : <img src={preview || '/assets/indian-thali.png'} alt={preview ? 'Your meal' : 'An Indian thali'} className="h-64 w-full object-cover" />}<div className="p-6"><h2 className="flex items-center gap-2 text-xl font-semibold"><Sparkles className="text-primary" size={20} />Your meal, in a snap.</h2><p className="my-3 text-sm leading-relaxed text-muted-foreground">Take a clear overhead photo. AI estimates the foods and portion, then you review and adjust.</p>{busy ? <p role="status" className="flex items-center justify-center gap-2 rounded-xl bg-primary/10 p-4 text-sm text-primary"><Loader2 size={18} className="animate-spin" />{capturing && !working ? 'Opening camera…' : 'Analyzing your food…'}</p> : <div className="flex flex-wrap gap-3"><button className="action flex-1" onClick={openMealCamera}><Camera size={18} />Open camera</button><label className="quiet cursor-pointer"><Upload size={17} />Upload photo<input type="file" accept="image/*" className="hidden" onChange={e => { const file = e.target.files?.[0]; if (file) photo(file); e.target.value = ''; }} /></label></div>}<p className="mt-3 text-center text-[10px] text-muted-foreground">Estimates, not exact measurements. Review before logging.</p></div></section>}
       {mode === 'ai' && <AIMealPanel items={[]} onBusyChange={setBusy} onApply={(items, assumptions) => { setPhotoPath(undefined); setPreview(''); setAINotes(assumptions); setScanItems(items); }} />}
       {mode === 'barcode' && <section className="panel space-y-5 p-6"><h2 className="text-xl font-semibold">Scan packaged food</h2>{camera ? <BarcodeCamera onCode={lookup} /> : <button disabled={busy} onClick={() => setCamera(true)} className="flex h-48 w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-primary/40 bg-primary/5 text-primary"><ScanBarcode size={45} /><span className="text-sm">Open camera scanner</span></button>}<p className="text-xs text-muted-foreground">Or enter the barcode. Open Food Facts nutrition is per 100 g; adjust portions before logging.</p><form className="flex gap-3" onSubmit={e => { e.preventDefault(); lookup(code); }}><input className="field" inputMode="numeric" pattern="[0-9]{8,14}" required placeholder="8–14 digit barcode" value={code} onChange={e => setCode(e.target.value)} /><button className="action" disabled={busy} aria-label="Look up barcode">{busy ? <Loader2 className="animate-spin" size={18} /> : <Search size={18} />}</button></form></section>}
       {mode === 'manual' && <ManualFoodForm food={manual} editing={!!editingId} busy={busy} saveCustom={saveCustom} onSaveCustom={setSaveCustom} onSubmit={log} />}
